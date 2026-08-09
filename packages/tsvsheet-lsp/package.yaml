@@ -1,0 +1,35 @@
+---
+name: tsvsheet-lsp
+description: Language Server Protocol server for tsvsheet .tsvt spreadsheets — diagnostics, hover, and fill code actions from the go-tsvsheet engine.
+homepage: https://github.com/tsvsheet/tsvsheet.lsp
+licenses:
+  - MIT
+languages:
+  - tsvsheet
+categories:
+  - LSP
+source:
+  id: pkg:github/tsvsheet/tsvsheet.lsp@v0.3.2
+  asset:
+    - target: darwin_arm64
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-darwin-arm64.tar.gz
+      bin: tsvsheet-lsp-darwin-arm64
+    - target: darwin_x64
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-darwin-amd64.tar.gz
+      bin: tsvsheet-lsp-darwin-amd64
+    - target: linux_arm64
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-linux-arm64.tar.gz
+      bin: tsvsheet-lsp-linux-arm64
+    - target: linux_arm
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-linux-arm.tar.gz
+      bin: tsvsheet-lsp-linux-arm
+    - target: linux_x64
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-linux-amd64.tar.gz
+      bin: tsvsheet-lsp-linux-amd64
+    - target: win_x64
+      file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-windows-amd64.tar.gz
+      bin: tsvsheet-lsp-windows-amd64.exe
+bin:
+  tsvsheet-lsp: "{{source.asset.bin}}"
+neovim:
+  lspconfig: tsvsheet

@@ -1,0 +1,55 @@
+# The registry's gate and publisher: validate every package definition against
+# upstream reality (shape, pinned version is upstream latest, every templated
+# asset exists, every archive carries its declared binary), then compile and
+# release registry.json.zip + checksums.txt — the artifacts mason.nvim's
+# GitHub registry source fetches from the LATEST release. The weekly run
+# re-validates the unchanged tree so an upstream release flips the gate red,
+# which is the signal to bump the pin; scheduled runs never publish.
+name: registry
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "37 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: registry-release
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Validate package definitions against upstream releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: make validate
+      - name: Build registry.json
+        shell: bash
+        run: make build
+      - name: Package release assets
+        if: github.event_name != 'schedule'
+        shell: bash
+        run: |
+          cp var/registry.json registry.json
+          zip registry.json.zip registry.json
+          sha256sum registry.json.zip registry.json > checksums.txt
+      - name: Publish release
+        if: github.event_name != 'schedule'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=true
+          [[ "$(gh api "repos/${GITHUB_REPOSITORY}/branches/main" --jq .commit.sha)" = "${GITHUB_SHA}" ]] || latest=false
+          tag="$(date -u +%Y-%m-%d)-${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          gh release create "${tag}" registry.json.zip checksums.txt --title "${tag}" --target "${GITHUB_SHA}" --latest="${latest}" --notes "mason registry snapshot ${GITHUB_SHA}"
