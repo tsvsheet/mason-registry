@@ -9,7 +9,7 @@ languages:
 categories:
   - LSP
 source:
-  id: pkg:github/tsvsheet/tsvsheet.lsp@v0.3.2
+  id: pkg:github/tsvsheet/tsvsheet.lsp@v0.3.3
   asset:
     - target: darwin_arm64
       file: tsvsheet-lsp-{{ version | strip_prefix "v" }}-darwin-arm64.tar.gz
